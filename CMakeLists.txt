@@ -4,10 +4,10 @@ project(SlicerACVD)
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
-set(EXTENSION_HOMEPAGE "https://www.slicer.org/wiki/Documentation/Nightly/Extensions/SlicerACVD")
-set(EXTENSION_CATEGORY "Examples")
-set(EXTENSION_CONTRIBUTORS "John Doe (AnyWare Corp.)")
-set(EXTENSION_DESCRIPTION "This is an example of an extension using SuperBuild to build a dependent project named Foo")
+set(EXTENSION_HOMEPAGE "https://github.com/mauigna06/SlicerACVD")
+set(EXTENSION_CATEGORY "Surface Models")
+set(EXTENSION_CONTRIBUTORS "Mauro Ignacio Dominguez")
+set(EXTENSION_DESCRIPTION "This extension implements ACVD remeshing library utilities into Slicer")
 set(EXTENSION_ICONURL "https://www.example.com/Slicer/Extensions/SlicerACVD.png")
 set(EXTENSION_SCREENSHOTURLS "https://www.example.com/Slicer/Extensions/SlicerACVD/Screenshots/1.png")
 set(EXTENSION_DEPENDS "NA") # Specified as a list or "NA" if no dependencies
@@ -35,13 +35,13 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Extension modules
-add_subdirectory(acvdRemeshingCLI)
 add_subdirectory(acvdRemeshing)
+add_subdirectory(acvdRemeshingCLI)
 ## NEXT_MODULE
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)
-#list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${Foo_DIR};Foo;RuntimeLibraries;/")
+#list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${acvd_DIR};ACVD;RuntimeLibraries;/")
 set(${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS "${EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS}" CACHE STRING "List of external projects to install" FORCE)
 
 #-----------------------------------------------------------------------------

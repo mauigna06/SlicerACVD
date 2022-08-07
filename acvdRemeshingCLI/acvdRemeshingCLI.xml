@@ -4,13 +4,37 @@
   <title>acvdRemeshingCLI</title>
   <description><![CDATA[This is a CLI module that can be bundled in an extension]]></description>
   <version>0.0.1</version>
-  <documentation-url>https://github.com/username/project</documentation-url>
+  <documentation-url>https://github.com/mauigna06/SlicerACVD</documentation-url>
   <license>Slicer</license>
-  <contributor>FirstName LastName (Institution), FirstName LastName (Institution)</contributor>
-  <acknowledgements>This work was partially funded by NIH grant NXNNXXNNNNNN-NNXN</acknowledgements>
+  <contributor>Mauro I. Dominguez</contributor>
+  <acknowledgements>This work was made ad-honorem</acknowledgements>
+  
+  <parameters>
+    <label>Command</label>
+    <description><![CDATA[ACVD's Remeshing command]]></description>
+    <string>
+      <name>acvdCommand</name>
+      <label>ACVD's Remeshing Command</label>
+      <channel>input</channel>
+      <longflag>--acvdCommand</longflag>
+      <description><![CDATA[specify the acvdRemeshing command]]></description>
+    </string>
+  </parameters>
+
+  <parameters>
+    <label>Input Volumes</label>
+    <model>
+      <name>inputModel</name>
+      <label>Input Model</label>
+      <channel>input</channel>
+      <longflag>--inputModel</longflag>
+      <description><![CDATA[Input Volume.]]></description>
+    </image>
+  </parameters>
+
   <parameters>
     <label>IO</label>
-    <description><![CDATA[Input/output parameters]]></description>
+    <description><![CDATA[ACVD's Remeshing command]]></description>
     <double>
       <name>sigma</name>
       <longflag>sigma</longflag>

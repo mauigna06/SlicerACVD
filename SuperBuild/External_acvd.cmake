@@ -1,5 +1,5 @@
 
-set(proj Foo)
+set(proj acvd)
 
 # Set dependency list
 set(${proj}_DEPENDS
@@ -14,21 +14,21 @@ if(${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${proj})
 endif()
 
 # Sanity checks
-if(DEFINED Foo_DIR AND NOT EXISTS ${Foo_DIR})
-  message(FATAL_ERROR "Foo_DIR [${Foo_DIR}] variable is defined but corresponds to nonexistent directory")
+if(DEFINED acvd_DIR AND NOT EXISTS ${acvd_DIR})
+  message(FATAL_ERROR "acvd_DIR [${acvd_DIR}] variable is defined but corresponds to nonexistent directory")
 endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${proj})
 
   #ExternalProject_SetIfNotDefined(
   #  ${SUPERBUILD_TOPLEVEL_PROJECT}_${proj}_GIT_REPOSITORY
-  #  "${EP_GIT_PROTOCOL}://github.com/Foo/Foo.git"
+  #  "${EP_GIT_PROTOCOL}://github.com/valette/ACVD.git"
   #  QUIET
   #  )
 
   #ExternalProject_SetIfNotDefined(
   #  ${SUPERBUILD_TOPLEVEL_PROJECT}_${proj}_GIT_TAG
-  #  "1e823001cb41c92667299635643f1007876d09f6"
+  #  "f6fb3a0b2b9433f7362021476c93869d2acdb738"
   #  QUIET
   #  )
 
@@ -51,35 +51,23 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${SUPERBUILD_TOPLEVEL_PROJECT}_USE_SYSTEM_${p
       -DCMAKE_CXX_STANDARD:STRING=${CMAKE_CXX_STANDARD}
       -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=${CMAKE_CXX_STANDARD_REQUIRED}
       -DCMAKE_CXX_EXTENSIONS:BOOL=${CMAKE_CXX_EXTENSIONS}
+      -DCMAKE_BUILD_TYPE=Release
       # Output directories
       -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_BIN_DIR}
       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-      # Install directories
-      # XXX The following two variables should be updated to match the
-      #     requirements of a real CMake based external project
-      # XXX Then, this comment and the one above should be removed. Really.
-      -DFOO_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -DFOO_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      # Output directories for CLIs
-      #-DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_RUNTIME_OUTPUT_DIRECTORY}
-      #-DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_LIBRARY_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_LIBRARY_OUTPUT_DIRECTORY}
-      #-DSlicerExecutionModel_DEFAULT_CLI_RUNTIME_ARCHIVE_DIRECTORY:PATH=${SlicerExecutionModel_DEFAULT_CLI_ARCHIVE_OUTPUT_DIRECTORY}
+      -DCMAKE_INSTALL_LIBDIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -DCMAKE_INSTALL_BINDIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       # Options
       -DBUILD_TESTING:BOOL=OFF
-      # Dependencies
-      # -DBar_DIR:PATH=${Bar_DIR}
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo
-      "This CONFIGURE_COMMAND is just here as a placeholder."
-      "Remove this line to enable configuring of a real CMake based external project"
-    BUILD_COMMAND ${CMAKE_COMMAND} -E echo
-      "This BUILD_COMMAND is just here as a placeholder."
-      "Remove this line to enable building of a real CMake based external project"
     INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
     )
-  set(${proj}_DIR ${EP_BINARY_DIR})
+
+  ExternalProject_GenerateProjectDescription_Step(${proj})
+
+  set(${proj}_DIR ${EP_BINARY_DIR}/ACVD-build)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
