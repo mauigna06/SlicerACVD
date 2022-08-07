@@ -22,14 +22,20 @@
   </parameters>
 
   <parameters>
-    <label>Input Volumes</label>
-    <model>
+    <geometry type="model" fileExtensions=".obj">
       <name>inputModel</name>
-      <label>Input Model</label>
+      <label>Input model</label>
+      <description><![CDATA[Input model to be flattened]]></description>
       <channel>input</channel>
-      <longflag>--inputModel</longflag>
-      <description><![CDATA[Input Volume.]]></description>
-    </image>
+      <index>0</index>
+    </geometry>
+    <geometry type="model" reference="inputModel" fileExtensions=".obj">
+      <name>outputModel</name>
+      <label>Output model</label>
+      <channel>output</channel>
+      <index>1</index>
+      <description><![CDATA[Output flattened model]]></description>
+    </geometry>
   </parameters>
 
   <parameters>
