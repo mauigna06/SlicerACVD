@@ -53,7 +53,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="ctkSliderWidget" name="curvatureSliderWidget">
+       <widget class="ctkSliderWidget" name="curvatureOfMeshSliderWidget">
         <property name="toolTip">
          <string>Set threshold value for computing the output image. Voxels that have intensities lower than this value will set to zero.</string>
         </property>
@@ -98,7 +98,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="ctkSliderWidget" name="numberOfVerticesSliderWidget">
+       <widget class="ctkSliderWidget" name="numberOfVerticesOfMeshSliderWidget">
         <property name="decimals">
          <number>0</number>
         </property>
@@ -114,6 +114,20 @@
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Number of vertices</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Output non-manifold mesh:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="nonManifoldMeshCheckBox">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -161,7 +175,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="applyButton">
+    <widget class="QPushButton" name="runRemeshingButton">
      <property name="enabled">
       <bool>false</bool>
      </property>

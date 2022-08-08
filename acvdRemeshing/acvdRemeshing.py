@@ -79,14 +79,14 @@ class acvdRemeshingWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         # These connections ensure that whenever user changes some settings on the GUI, that is saved in the MRML scene
         # (in the selected parameter node).
-        self.ui.inputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-        self.ui.outputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-        self.ui.imageThresholdSliderWidget.connect("valueChanged(double)", self.updateParameterNodeFromGUI)
+        self.ui.inputModelSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
+        self.ui.outputModelSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
+        self.ui.numberOfVerticesOfMeshSliderWidget.connect("valueChanged(double)", self.updateParameterNodeFromGUI)
+        self.ui.curvatureOfMeshSlideWidget.connect("valueChanged(double)", self.updateParameterNodeFromGUI)
         self.ui.invertOutputCheckBox.connect("toggled(bool)", self.updateParameterNodeFromGUI)
-        self.ui.invertedOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
-
+        
         # Buttons
-        self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
+        self.ui.runRemeshingButton.connect('clicked(bool)', self.onRunRemeshingButton)
 
         # Make sure parameter node is initialized (needed for module reload)
         self.initializeParameterNode()
@@ -135,12 +135,6 @@ class acvdRemeshingWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         self.setParameterNode(self.logic.getParameterNode())
 
-        # Select default input nodes if nothing is selected yet to save a few clicks for the user
-        if not self._parameterNode.GetNodeReference("InputVolume"):
-            firstVolumeNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLScalarVolumeNode")
-            if firstVolumeNode:
-                self._parameterNode.SetNodeReferenceID("InputVolume", firstVolumeNode.GetID())
-
     def setParameterNode(self, inputParameterNode):
         """
         Set and observe parameter node.
@@ -175,19 +169,19 @@ class acvdRemeshingWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self._updatingGUIFromParameterNode = True
 
         # Update node selectors and sliders
-        self.ui.inputSelector.setCurrentNode(self._parameterNode.GetNodeReference("InputVolume"))
-        self.ui.outputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolume"))
-        self.ui.invertedOutputSelector.setCurrentNode(self._parameterNode.GetNodeReference("OutputVolumeInverse"))
-        self.ui.imageThresholdSliderWidget.value = float(self._parameterNode.GetParameter("Threshold"))
-        self.ui.invertOutputCheckBox.checked = (self._parameterNode.GetParameter("Invert") == "true")
+        self.ui.inputModelSelector.setCurrentNode(self._parameterNode.GetNodeReference("inputModel"))
+        self.ui.outputModelSelector.setCurrentNode(self._parameterNode.GetNodeReference("outputModel"))
+        self.ui.numberOfVerticesOfMeshSliderWidget.value = int(self._parameterNode.GetParameter("numberOfVerticesOfMesh"))
+        self.ui.curvatureOfMeshSliderWidget.value = float(self._parameterNode.GetParameter("curvatureOfMesh"))
+        self.ui.nonManifoldMeshCheckBox.checked = self._parameterNode.GetParameter("nonManifoldMesh") == "True"
+        
+        self.ui.inputModelSelector.toolTip = "Model to be remeshed."
+        self.ui.outputModelSelector.toolTip = "Remeshed output model."
+        self.ui.numberOfVerticesOfMeshSliderWidget.toolTip = "Select the target number of vertices the output mesh will have."
+        self.ui.numberOfVerticesOfMeshSliderWidget.toolTip = "Select the target curvature the output mesh will have."
 
-        # Update buttons states and tooltips
-        if self._parameterNode.GetNodeReference("InputVolume") and self._parameterNode.GetNodeReference("OutputVolume"):
-            self.ui.applyButton.toolTip = "Compute output volume"
-            self.ui.applyButton.enabled = True
-        else:
-            self.ui.applyButton.toolTip = "Select input and output volume nodes"
-            self.ui.applyButton.enabled = False
+        self.ui.runRegistrationButton.enabled = (self.ui.inputModelSelector.currentNodeID != ""
+          and self.ui.outputModelSelector.currentNodeID != "")
 
         # All the GUI updates are done
         self._updatingGUIFromParameterNode = False
@@ -203,12 +197,12 @@ class acvdRemeshingWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         wasModified = self._parameterNode.StartModify()  # Modify all properties in a single batch
 
-        self._parameterNode.SetNodeReferenceID("InputVolume", self.ui.inputSelector.currentNodeID)
-        self._parameterNode.SetNodeReferenceID("OutputVolume", self.ui.outputSelector.currentNodeID)
-        self._parameterNode.SetParameter("Threshold", str(self.ui.imageThresholdSliderWidget.value))
-        self._parameterNode.SetParameter("Invert", "true" if self.ui.invertOutputCheckBox.checked else "false")
-        self._parameterNode.SetNodeReferenceID("OutputVolumeInverse", self.ui.invertedOutputSelector.currentNodeID)
-
+        self._parameterNode.SetNodeReferenceID("inputModel", self.ui.inputModelSelector.currentNodeID)
+        self._parameterNode.SetNodeReferenceID("outputModel", self.ui.outputModelSelector.currentNodeID)
+        self._parameterNode.SetParameter("numberOfVerticesOfMesh", str(self.ui.numberOfVerticesOfMeshSliderWidget.value))
+        self._parameterNode.SetParameter("curvatureOfMesh", str(self.ui.curvatureOfMeshSliderWidget.value))
+        self._parameterNode.SetParameter("nonManifoldMesh", "True" if self.ui.nonManifoldMeshCheckBox.checked else "False")
+        
         self._parameterNode.EndModify(wasModified)
 
     def onApplyButton(self):
@@ -216,16 +210,50 @@ class acvdRemeshingWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         Run processing when user clicks "Apply" button.
         """
         with slicer.util.tryWithErrorDisplay("Failed to compute results.", waitCursor=True):
-
             # Compute output
-            self.logic.process(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(),
-                               self.ui.imageThresholdSliderWidget.value, self.ui.invertOutputCheckBox.checked)
+            self.logic.process(self.ui.inputModelSelector.currentNode(), self.ui.outputModelSelector.currentNode(),
+                               self.ui.numberOfVerticesOfMeshSliderWidget.value, self.ui.invertOutputCheckBox.checked)
 
-            # Compute inverted output (if needed)
-            if self.ui.invertedOutputSelector.currentNode():
-                # If additional output volume is selected then result with inverted threshold is written there
-                self.logic.process(self.ui.inputSelector.currentNode(), self.ui.invertedOutputSelector.currentNode(),
-                                   self.ui.imageThresholdSliderWidget.value, not self.ui.invertOutputCheckBox.checked, showResult=False)
+    def onRunRemeshingButton(self):
+        if self.ui.runRegistrationButton.text == 'Cancel':
+        self.logic.cancelRegistration()
+            return
+
+        parameters = {}
+        
+        parameters['outputSettings'] = {}
+        parameters['outputSettings']['transform'] = self.ui.outputTransformComboBox.currentNode()
+        parameters['outputSettings']['volume'] = self.ui.outputVolumeComboBox.currentNode()
+        parameters['outputSettings']['interpolation'] = self.ui.outputInterpolationComboBox.currentText
+        parameters['outputSettings']['useDisplacementField'] = int(self.ui.outputDisplacementFieldCheckBox.checked)
+
+        parameters['initialTransformSettings'] = {}
+        parameters['initialTransformSettings']['initializationFeature'] = int(self._parameterNode.GetParameter("initializationFeature"))
+        parameters['initialTransformSettings']['initialTransformNode'] = self.ui.initialTransformNodeComboBox.currentNode()
+
+        parameters['generalSettings'] = {}
+        parameters['generalSettings']['dimensionality'] = self.ui.dimensionalitySpinBox.value
+        parameters['generalSettings']['histogramMatching'] = int(self.ui.histogramMatchingCheckBox.checked)
+        parameters['generalSettings']['winsorizeImageIntensities'] = [self.ui.winsorizeRangeWidget.minimumValue, self.ui.winsorizeRangeWidget.maximumValue]
+        parameters['generalSettings']['computationPrecision'] = self.ui.computationPrecisionComboBox.currentText
+
+        self.logic.process(**parameters)
+
+        self.ui.cliWidget.setCurrentCommandLineModuleNode(self.logic._cliNode)
+        self._cliObserver = self.logic._cliNode.AddObserver('ModifiedEvent', self.onProcessingStatusUpdate)
+        self.ui.runRegistrationButton.text = 'Cancel'
+
+    def onProcessingStatusUpdate(self, caller, event):
+        if (caller.GetStatus() & caller.Cancelled):
+        self.ui.runRegistrationButton.text = "Run Registration"
+        self.logic._cliNode.RemoveObserver(self._cliObserver)
+        elif (caller.GetStatus() & caller.Completed):
+        if (caller.GetStatus() & caller.ErrorsMask):
+            qt.QMessageBox().warning(qt.QWidget(),'Error', 'ANTs Failed. See CLI output.')
+        self.ui.runRegistrationButton.text = "Run Registration"
+        self.logic._cliNode.RemoveObserver(self._cliObserver)
+        else:
+        self.ui.runRegistrationButton.text = "Cancel"
 
 
 #
